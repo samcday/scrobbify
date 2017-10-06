@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion : '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Scrobbify backend.
+
+Resources:
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handler.Handle
+      Runtime: python2.7
+      CodeUri: ./handler.zip
+      Events:
+        GetResource:
+          Type: Api
+          Properties:
+            Path: /
+            Method: get
