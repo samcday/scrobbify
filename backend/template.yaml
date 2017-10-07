@@ -17,8 +17,8 @@ Resources:
             Method: get
       Environment:
         Variables:
-          SPOTIFY_CLIENT_ID: setme
-          SPOTIFY_CLIENT_SECRET: setme
+          SPOTIFY_ID: setme
+          SPOTIFY_SECRET: setme
   SpotifyCallbackEndpoint:
     Type: AWS::Serverless::Function
     Properties:
@@ -33,5 +33,5 @@ Resources:
             Method: get
       Environment:
         Variables:
-          SPOTIFY_CLIENT_ID: setme
-          SPOTIFY_CLIENT_SECRET: setme
+          SPOTIFY_ID: setme
+          SPOTIFY_SECRET: setme
