@@ -8,9 +8,11 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/eawsy/aws-lambda-go-net/service/lambda/runtime/net"
 	"github.com/eawsy/aws-lambda-go-net/service/lambda/runtime/net/apigatewayproxy"
@@ -131,9 +133,15 @@ func init() {
 			panic(err)
 		}
 		json.NewEncoder(w).Encode(cu)
-		fmt.Fprint(w, ",")
 
-		json.NewEncoder(w).Encode(spotifyTok)
+		newTok, err := cli.Token()
+		if err != nil {
+			panic(err)
+		}
+
+		if err := updateSpotifyToken(claims.Subject, spotifyTok, newTok); err != nil {
+			panic(err)
+		}
 
 		fmt.Fprint(w, "]")
 	})
@@ -155,6 +163,39 @@ func saveSpotifyToken(id string, tok *oauth2.Token) error {
 		},
 	})
 	return err
+}
+
+func updateSpotifyToken(id string, oldtok, tok *oauth2.Token) error {
+	if oldtok.AccessToken == tok.AccessToken {
+		return nil
+	}
+
+	expr, err := expression.NewBuilder().
+		WithUpdate(expression.Set(expression.Name("token"), expression.Value(tok))).
+		WithCondition(expression.Name("token.access_token").Equal(expression.Value(oldtok.AccessToken))).
+		Build()
+
+	if err != nil {
+		return err
+	}
+
+	_, err = ddb.UpdateItem(&dynamodb.UpdateItemInput{
+		TableName:                 aws.String("users"),
+		Key:                       map[string]*dynamodb.AttributeValue{"id": &dynamodb.AttributeValue{S: aws.String(id)}},
+		ConditionExpression:       expr.Condition(),
+		UpdateExpression:          expr.Update(),
+		ExpressionAttributeNames:  expr.Names(),
+		ExpressionAttributeValues: expr.Values(),
+	})
+	if aerr, ok := err.(awserr.Error); ok {
+		if aerr.Code() != "ConditionalCheckFailedException" {
+			return err
+		}
+	} else {
+		return err
+	}
+
+	return nil
 }
 
 func getSpotifyToken(id string) (tok *oauth2.Token, err error) {
