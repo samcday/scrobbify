@@ -6,9 +6,17 @@ Built as a React frontend app + AWS SAM backend, with the added awesomeness of [
 
 ## Setup
 
+Prereqs:
+
+ * AWS CLI
+ * Docker + Docker-Compose
+ * Go
+
 ```
-go get github.com/cespare/reflex
-go get github.com/mattn/goreman
+go get github.com/cespare/reflex github.com/mattn/goreman
+
+docker-compose up -d
+./setup.sh
 ```
 
 ## Local development
@@ -16,7 +24,7 @@ go get github.com/mattn/goreman
 Bring up SAM Local API server, a process to recompile on backend changes, etc:
 
 ```
-goreman
+goreman start
 ```
 
 Then hit http://localhost:3000

@@ -46,6 +46,7 @@ docker:
 		-e PACKAGE=$(PACKAGE)\
 		-e GOPATH=$(GOPATH)\
 		-e LDFLAGS='$(LDFLAGS)'\
+		-v lambdagoshimcache:/usr/local/go/pkg/linux_amd64_dynlink\
 		-v $(CURDIR):$(CURDIR)\
 		$(foreach GP,$(subst :, ,$(GOPATH)),-v $(GP):$(GP))\
 		-w $(CURDIR)\
@@ -58,7 +59,7 @@ all: build pack perm
 .PHONY: all
 
 build:
-	go build -buildmode=plugin -ldflags='-w -s $(LDFLAGS)' -o $(HANDLER).so
+	go build -v -i -buildmode=plugin -ldflags='-w -s $(LDFLAGS)' -o $(HANDLER).so
 
 .PHONY: build
 

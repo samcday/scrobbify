@@ -3,35 +3,25 @@ Transform: AWS::Serverless-2016-10-31
 Description: Scrobbify backend.
 
 Resources:
-  LoginEndpoint:
+  ApiFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: handler.Handle
       Runtime: python2.7
       CodeUri: ./handler.zip
       Events:
-        GetResource:
+        ApiRoot:
           Type: Api
           Properties:
-            Path: /login
-            Method: get
-      Environment:
-        Variables:
-          SPOTIFY_ID: setme
-          SPOTIFY_SECRET: setme
-  SpotifyCallbackEndpoint:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: handler.Handle
-      Runtime: python2.7
-      CodeUri: ./handler.zip
-      Events:
-        GetResource:
+            Path: /
+            Method: ANY
+        ApiGreedy:
           Type: Api
           Properties:
-            Path: /spotifycallback
-            Method: get
+            Path: /{proxy+}
+            Method: ANY
       Environment:
         Variables:
+          BASE_URL: https://scrobbify.com
           SPOTIFY_ID: setme
           SPOTIFY_SECRET: setme
